@@ -1,4 +1,4 @@
-getgenv().targetfolder = game.workspace.Zombies
+getgenv().targetfolder = game.Zombies
 getgenv().useray = false
 
 
