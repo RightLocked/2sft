@@ -1,4 +1,4 @@
-getgenv().targetfolder = game.Zombies
+getgenv().targetfolder = game:GetService("Workspace").Zombies
 getgenv().useray = false
 
 
