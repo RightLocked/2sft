@@ -1,0 +1,684 @@
+local uilibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/shoveleater/ui/main/ui"))()
+local windowz = uilibrary:CreateWindow("Evc | Private", "The Final Stand 2 ", true)
+local Page1 = windowz:CreatePage("Autofarm")
+local Page2 = windowz:CreatePage("Aimbot")
+local Page4 = windowz:CreatePage("Money")
+local Page5 = windowz:CreatePage("Visuals")
+local Page6 = windowz:CreatePage("Spoofing")
+local Page3 = windowz:CreatePage("Misc")
+
+
+local UILOCATION = game.CoreGui[getgenv().uiname]
+
+local isVisible = true
+
+game:GetService("UserInputService").InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.KeyCode == Enum.KeyCode.Insert then
+        isVisible = not isVisible
+        UILOCATION.Enabled  = isVisible
+    end
+end)
+
+
+
+local Aimbotab = Page2:CreateSection("Aimbot")
+
+local DonateTab = Page4:CreateSection("Donating")
+
+local RepairTab = Page4:CreateSection("Repairing")
+
+local VisualsTab = Page5:CreateSection("Visuals")
+
+local WeaponVisTab = Page5:CreateSection("Weapon Visuals")
+
+local SpoofingTab = Page6:CreateSection("Spoofing")
+
+
+local Autofarmtab = Page1:CreateSection("Autofarm")
+local Autofarmconfigurationtab = Page1:CreateSection("Configuration")
+
+local Misctab = Page3:CreateSection("Misc")
+
+
+local Lighting = game:GetService("Lighting")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local camera = game.Workspace.CurrentCamera
+local RunService = game:GetService("RunService")
+local toenable = false
+local vu = game:GetService("VirtualUser")
+local Workspace = game:GetService("Workspace")
+local pmode = nil
+local autovote
+local spawnoutsidespawn = false
+local closestZombie = nil
+
+local enablesilent
+local enablecamlock
+
+local enablesilent1
+local enablecamlock1
+local enableaimbot1 -- Lets silent1 and camlock1 know that they can work
+
+local toolname
+
+local blacklist
+local prioritize
+
+local playercheckname
+
+local forcefieldcheck
+
+local antiafk
+
+local autodonate
+local autodonatename
+local autorepairshop
+local autorepairbarricade
+
+local fullbright
+local shadows
+
+local bulletmaterial
+local bulletcolor
+local outdoorcolor
+local nobulletdisappear
+
+local toolblock
+
+local autoupgradec96
+
+local teleportstyle -- Can either be Top, Behind, Front
+
+
+
+
+
+
+local function getRandomString(length)
+    local characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+    local result = ""
+    for i = 1, length do
+        local charIndex = math.random(1, #characters)
+        local char = characters:sub(charIndex, charIndex)
+        result = result .. char
+    end
+    return result
+end
+
+
+SpoofingTab:CreateButton("Spoof Users", function()
+    local players = game:GetService("Players"):GetPlayers()
+
+    for _, player in ipairs(players) do
+        local newName = getRandomString(5)
+        player.Name = "Evc | " .. newName
+        player.DisplayName = "Evc | " .. newName
+    end
+
+    -- Update player names in the workspace
+    local workspacePlayers = game.Workspace:GetChildren()
+    for _, player in ipairs(workspacePlayers) do
+        if player:IsA("Model") and player:FindFirstChild("Humanoid") then
+            local newName = getRandomString(5)
+            player.Name = "Evc | " .. newName
+            player.Humanoid.DisplayName = "Evc | " .. newName
+        end
+    end
+end)
+
+
+-- Function to spoof Player text
+local function spoofPlayerText(gui)
+    if gui and gui:IsA("TextLabel") then
+        local newName = getRandomString(5)
+        gui.Text = "Evc | " .. newName
+    end
+end
+
+-- Create a button to spoof leaderboard users
+SpoofingTab:CreateButton("Spoof Leaderboard Users", function()
+    local playerBoards = game.Workspace.Map.Scripted.PlayerBoards
+    if playerBoards and playerBoards.Scoreboard and playerBoards.Scoreboard.Board then
+        local scoreboardGui = playerBoards.Scoreboard.Board.SurfaceGui
+
+        local numSpoofed = 0 -- Counter for the number of children spoofed
+        for i = 1, 6 do
+            local child = scoreboardGui:FindFirstChild(tostring(i))
+            if child and child:IsA("Frame") then
+                local playerText = child:FindFirstChild("Player")
+                spoofPlayerText(playerText)
+                numSpoofed = numSpoofed + 1
+            end
+        end
+
+
+    end
+end)
+
+-- Create a button to spoof avatars
+SpoofingTab:CreateButton("Spoof Avatars", function()
+    -- Find every humanoid in the game and delete their accessories
+    local players = game:GetService("Players"):GetPlayers()
+    for _, player in ipairs(players) do
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                local accessories = humanoid:GetAccessories()
+                for _, accessory in ipairs(accessories) do
+                    accessory:Destroy()
+                end
+            end
+        end
+    end
+end)
+
+
+
+
+
+
+
+VisualsTab:CreateToggle("Fullbright", {Toggled=false , Description = false}, function(Value)
+    fullbright = Value
+end)
+
+VisualsTab:CreateToggle("Shadows", {Toggled=false , Description = false}, function(Value)
+    shadows = Value
+end)
+VisualsTab:CreateColorPicker("Ambient Color(Default : 128, 128, 128)", Color3.fromRGB(128, 128, 128), function (vv)
+    outdoorcolor = vv
+end)
+
+
+WeaponVisTab:CreateDropdown("Material", {
+    List = {"Neon", "ForceField", "SmoothPlastic"},
+    Default = "SmoothPlastic"}, function(value)
+        bulletmaterial = value
+end)
+
+WeaponVisTab:CreateColorPicker("Bullet Color (Default : 245, 205, 48)", Color3.fromRGB(245, 205, 48), function (vv)
+    bulletcolor = vv
+end)
+
+WeaponVisTab:CreateToggle("No bullet disappear", {Toggled=false , Description = false}, function(Value)
+    nobulletdisappear = Value
+end)
+
+
+RepairTab:CreateToggle("Auto Repair Barricade", {Toggled=false , Description = false}, function(Value)
+    autorepairbarricade = Value
+end)
+
+RepairTab:CreateToggle("Auto Repair shop", {Toggled=false , Description = false}, function(Value)
+    autorepairshop = Value
+end)
+
+RunService.Heartbeat:Connect(function()
+    if autorepairbarricade then
+        game:GetService("ReplicatedStorage").RemoteEvents.SellRepair:FireServer("Barricade")
+    end
+
+    if autorepairshop then
+        game:GetService("ReplicatedStorage").RemoteEvents.SellRepair:FireServer("Shop")
+
+    end
+
+end)
+
+
+DonateTab:CreateToggle("Autoupgrade c96", {Toggled=false , Description = false}, function(Value)
+    autoupgradec96 = Value
+end)
+
+
+
+DonateTab:CreateToggle("Auto Donate", {Toggled=false , Description = false}, function(Value)
+    autodonate = Value
+end)
+
+DonateTab:CreateTextbox("Player name", false, function (vv)
+    autodonatename = vv
+end)
+
+
+
+
+Autofarmtab:CreateToggle("Auto Zombie teleport / Enable autofarm", {Toggled=false , Description = "Enable autofarm/Disable autofarm"}, function(Value)
+   toenable = Value
+end)
+
+Autofarmtab:CreateDropdown("Autofarm teleport type", {
+    List = {"Above", "Behind", "Infront"},
+    Default = "Above"}, function(value)
+        teleportstyle = value
+end)
+
+
+
+
+
+Autofarmtab:CreateToggle("Auto vote", {Toggled=false , Description = false}, function(Value)
+   autovote = Value
+end)
+
+
+Autofarmtab:CreateToggle("Block clicking when no zombie is found", {Toggled=false , Description = "Prevents from clicking when there isnt any zombies"}, function(Value)
+   toolblock = Value
+
+   task.wait(0.5)
+   local tool = LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+   tool.Enabled = true
+end)
+
+Autofarmtab:CreateDropdown("Aimbot mode", {
+    List = {"Camlock"},
+    Default = "Select aimtype..."}, function(value)
+       if value == "Camlock" then
+          enablecamlock = true
+          enablesilent = false
+       end
+ end)
+
+local function checkModelsHealth()
+    local tool = LocalPlayer.Character:FindFirstChildWhichIsA("Tool")
+
+    if not tool then
+        return -- Exit the function if the player has no tool equipped
+    end
+
+    local models = game.Workspace.Zombies:GetDescendants()
+
+    local anyModelsAlive = false
+    for _, model in ipairs(models) do
+        if model:FindFirstChild("Zombie") then
+            local humanoid = model.Zombie
+            if humanoid.Health > 0 then
+                anyModelsAlive = true
+                break
+            end
+        end
+    end
+
+    tool.Enabled = anyModelsAlive
+end
+
+checkModelsHealth() -- Call the function initially to set the state based on the current models.
+
+RunService.Heartbeat:Connect(function()
+    if toolblock then
+        checkModelsHealth() -- Call the function on each heartbeat to keep checking for model health changes.
+    end
+    if autoupgradec96 then
+        --upgrade unlimited ammo
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "UnlimitedAmmo")
+        
+        -- get fully auto
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "Automatic")
+
+
+        --upgrade crit chance
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "CriticalChance")
+
+        --upgrade damage
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "Damage")
+
+        --upgrade mag sise
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "MaxClip")
+
+        --upgrade reload speeed
+        game:GetService("ReplicatedStorage").RemoteEvents.UpgradeWeapon:FireServer("C96", "ReloadSpeed")
+    end
+end)
+
+
+
+
+local recoil
+Aimbotab:CreateToggle("No-Recoil / Hide bullets", {Toggled=false , Description = false}, function(Value)
+    recoil = Value
+end)
+
+local mt = getrawmetatable(game)
+local old = mt.__namecall
+setreadonly(mt,false)
+mt.__namecall = newcclosure(function(self, ...)
+    local args = {...}
+    if recoil and getnamecallmethod() == 'FireServer' and self.Name == 'RemoteFireEvent' then
+      args[4] = {
+          [1] = {
+              [1] = Vector3.new(game.workspace.Zombies.Zombiesssssssss.HumanoidRootPart.Position)
+              
+          },
+      }
+    end
+    return old(self, unpack(args))
+end)
+
+
+Aimbotab:CreateToggle("Enable aimbot", {Toggled=false , Description = false}, function(Value)
+    enableaimbot1 = Value
+ end)
+
+
+Aimbotab:CreateDropdown("Aimbot mode", {
+   List = {"Camlock"},
+   Default = "Select aimbot type..."}, function(value)
+      if value == "Camlock" then
+         enablecamlock1 = true
+         enablesilent1 = false
+      end
+end)
+
+Autofarmconfigurationtab:CreateToggle("ForceField check", {Toggled=false , Description = false}, function(Value)
+    forcefieldcheck = Value
+ end)
+
+
+Autofarmconfigurationtab:CreateDropdown("Zombie targeting", {
+    List = {"Shop", "Player"},
+    Default = "Shop"}, function(value)
+        pmode = value
+end)
+
+Autofarmconfigurationtab:CreateTextbox("Prioritisation (boss = Boss", false, function (vv)
+    prioritize = vv
+ end)
+
+
+
+Misctab:CreateToggle("Antiafk", {Toggled=false , Description = false}, function(Value)
+    antiafk = Value
+end)
+
+Misctab:CreateToggle("Render 3d objects", {Toggled=true , Description = "Enable/Disable rendering 3d objects"}, function(Value)
+    game:GetService("RunService"):Set3dRenderingEnabled(Value)
+end)
+
+Misctab:CreateToggle("Spawn outside spawn", {Toggled=false , Description = "Respawn outside shop spawn"}, function(Value)
+    spawnoutsidespawn = Value
+ end)
+
+
+
+
+
+
+
+game:GetService("Players").LocalPlayer.Idled:connect(function()
+    if antiafk then
+        vu:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        wait(1)
+        vu:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end
+end)
+
+
+Autofarmconfigurationtab:CreateTextbox("Player name", false, function (vv)
+    playercheckname = vv
+ end)
+
+
+
+
+
+
+Autofarmconfigurationtab:CreateTextbox("Blacklist Zombie name", false, function (vv)
+    blacklist = vv
+ end)
+
+
+Autofarmconfigurationtab:CreateTextbox("Auto equip name", false, function (vv)
+    toolname = vv
+ end)
+
+-- AUTOFARM FUNCTION
+
+local isPaused = false
+
+local function resizeHead()
+    local success, error = pcall(function()
+        if isPaused == false then
+            local localPlayer = Players.LocalPlayer
+            local character = localPlayer.Character
+            if character then
+                local head = character:FindFirstChild("Head")
+                if head then
+                    local oldSize = head.Size
+                    head.Size = Vector3.new(0, 0, 0)
+                    RunService.RenderStepped:Wait()
+                    head.Size = oldSize
+                end
+            end
+        end
+    end)
+end
+
+
+
+-- loop to render pretty much everything 
+pcall(function()
+    RunService.Heartbeat:Connect(function()
+        if toenable then
+            resizeHead()
+        end
+        if autovote then
+            game:GetService("ReplicatedStorage").RemoteFunctions.VoteSkip:InvokeServer()
+        end
+        -- No shadows
+        if shadows == true then
+            game.Lighting.GlobalShadows = false
+        elseif shadows == false then
+            game.Lighting.GlobalShadows = true
+        end
+        -- Fullbright
+        if fullbright == false then
+            game.Lighting.Ambient = Color3.fromRGB(80, 80, 80)
+        elseif fullbright == true then
+            game.Lighting.Ambient = Color3.fromRGB(195, 195, 195)
+        end
+        -- Ambient color
+        game.Lighting.OutdoorAmbient = outdoorcolor
+        -- Bullet Material
+        for _, RayPart in pairs(game.Workspace.IgnoreList:GetChildren()) do
+            if RayPart.Name == "RayPart" then
+                RayPart.Material = bulletmaterial
+            end
+        end
+
+        -- Bullet Color
+        for _, RayPart in pairs(game.Workspace.IgnoreList:GetChildren()) do
+            if RayPart.Name == "RayPart" then
+                RayPart.Color = bulletcolor
+            end
+        end
+
+        -- No Bullet Disappear
+        if nobulletdisappear then
+            for _, RayPart in pairs(game.Workspace.IgnoreList:GetChildren()) do
+                if RayPart.Name == "RayPart" then
+                    RayPart.Transparency = 0
+                end
+            end
+        end
+
+    end)
+end)
+
+
+
+
+
+local function equipTool()
+    for i,v in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
+        if v.Name == toolname then
+            v.Parent = game.Players.LocalPlayer.Character
+        end
+    end
+end
+
+
+
+local function calculateDistance(position1, position2)
+   return (position1 - position2).magnitude
+end
+
+local spawning = false
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function()
+    if spawnoutsidespawn then
+        spawning = true
+        isPaused = true
+        toenable = false
+        if game.Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") then
+            game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = game:GetService("Workspace").Map.Shop.InvisibleWalls:GetChildren()[23].CFrame
+            LocalPlayer.Backpack.ChildAdded:Connect(function(item)
+                if item:IsA("Tool") then
+                    task.wait(1)
+                    equipTool()
+                    spawning = false
+                    toenable = true
+                end
+            end)
+        end
+    end
+end)
+
+local function teleportAboveZombie()
+    if autodonate then
+        local args = {
+            [1] = game:GetService("Players"):WaitForChild(autodonatename),
+            [2] = game.Players.LocalPlayer.ReplicatedMoney.Value
+        }
+
+        game:GetService("ReplicatedStorage").RemoteFunctions.TransferMoney:InvokeServer(unpack(args))
+
+    end
+
+    
+    if spawning == false and toenable then
+        task.wait(0.37)
+        isPaused = false
+        local fakeLightPosition = game:GetService("Workspace").Map.Scripted.Doors.FakeLight.Position
+        local zombies = game:GetService("Workspace").Zombies:GetChildren()
+
+        if #zombies == 0 then
+            closestZombie = nil -- Set closestZombie to nil when there are no zombies
+            return
+        end
+
+        local closestDistance = math.huge
+
+        local playerPosition
+
+        if pmode == "Player" then
+            local player = game.Players[playercheckname]
+
+            if player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                playerPosition = player.Character.HumanoidRootPart.Position
+            end
+        end
+
+        for _, zombie in ipairs(zombies) do
+            local humanoidRootPart = zombie:FindFirstChild("HumanoidRootPart")
+
+            if humanoidRootPart then
+                local zombiePosition = humanoidRootPart.Position
+
+                local skipZombie = false
+                local distance -- Declare distance variable here
+
+                if forcefieldcheck and zombie:FindFirstChild("ForceField") then
+                    skipZombie = true
+                elseif pmode == "Player" and playerPosition then
+                    distance = calculateDistance(zombiePosition, playerPosition) -- Assign value to distance variable
+
+                    if distance < closestDistance and zombie.Name ~= blacklist then
+                        closestZombie = zombie -- Update closestZombie
+                        closestDistance = distance -- Update closestDistance
+                    end
+                elseif pmode == "Shop" then
+                    distance = calculateDistance(zombiePosition, fakeLightPosition) -- Assign value to distance variable
+
+                    if distance < closestDistance and zombie.Name ~= blacklist then
+                        closestZombie = zombie -- Update closestZombie
+                        closestDistance = distance -- Update closestDistance
+                    end
+                end
+            end
+        end
+
+        
+        if prioritize and typeof(prioritize) == "string" then
+            local prioritizeZombie = workspace.Zombies:FindFirstChild(prioritize)
+            if prioritizeZombie and prioritizeZombie:FindFirstChild("HumanoidRootPart") then
+                -- Check if the prioritize zombie is not a forcefield zombie
+                if forcefieldcheck and prioritizeZombie:FindFirstChild("ForceField") then
+                    -- Skip the prioritize zombie and find the closest non-forcefield zombie
+                    prioritizeZombie = nil
+                end
+            else
+                prioritizeZombie = nil
+            end
+    
+            if prioritizeZombie then
+                closestZombie = prioritizeZombie
+            end
+        end
+    
+        -- Teleport the local player above the closest zombie
+        if closestZombie and closestZombie:FindFirstChild("Head") then
+            local zombiePosition = closestZombie:FindFirstChild("HumanoidRootPart").Position
+            local playerCharacter = LocalPlayer.Character
+            local humanoidRootPart = playerCharacter:FindFirstChild("HumanoidRootPart")
+    
+            if humanoidRootPart then
+                local teleportPosition
+                if teleportstyle == "Above" then
+                    teleportPosition = Vector3.new(zombiePosition.X, zombiePosition.Y + 10, zombiePosition.Z)
+                elseif teleportstyle == "Behind" then
+                    teleportPosition = Vector3.new(zombiePosition.X, zombiePosition.Y, zombiePosition.Z + 10)
+                elseif teleportstyle == "Infront" then
+                    teleportPosition = Vector3.new(zombiePosition.X, zombiePosition.Y, zombiePosition.Z - 10)
+                else
+                    teleportPosition = Vector3.new(zombiePosition.X, zombiePosition.Y + 10, zombiePosition.Z) -- If somehow none is chosen it will do above
+                end
+
+                humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+            end
+        end
+    end
+end
+
+
+
+
+
+-- Connect the teleportAboveZombie function to the RenderStepped event
+RunService.RenderStepped:Connect(function()
+    teleportAboveZombie()
+end)
+
+--Aimlock camera pointer
+local function pointCameraAtClosestZombie()
+    
+    local success, error = pcall(function()
+        if closestZombie:FindFirstChild("Head") then
+            workspace.CurrentCamera.CFrame = CFrame.new(workspace.CurrentCamera.CFrame.Position, closestZombie.Head.Position)
+        else
+            workspace.CurrentCamera = nil
+        end
+    end)
+end
+
+
+
+RunService.RenderStepped:Connect(function()
+    if toenable and enablecamlock then
+        pointCameraAtClosestZombie()
+    end
+end)
+---End of line
+
